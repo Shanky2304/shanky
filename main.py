@@ -4,13 +4,13 @@ import logging
 
 from llm_client import LLMClient
 from llm_client import GroqClient, CerebrasClient
+from model_router import choose_provider_and_model
+from provider_factory import make_client
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 load_dotenv()
-
-client :LLMClient = CerebrasClient()
 
 memory = open('memory.md','r').read() if os.path.exists('memory.md') else ""
 messages = [{
@@ -67,9 +67,18 @@ def run_agent(goal:str):
     })
 
     for _ in range(10):
+        
+        # Pick provider and model - model_router.py
+        provider, model = choose_provider_and_model(messages)
+        logger.info(f"Provider: {provider}, Model: {model}")
+
+        # create a client with those details - ProviderFactory; this should cache the clients
+        client: LLMClient = make_client(provider)
+
         choice = client.chat(
             messages=messages,
             tools=TOOL_SCHEMAS,
+            model=model
         )
 
         #logger.info(f"Assistant: {choice}\n")
