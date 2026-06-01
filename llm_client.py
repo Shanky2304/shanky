@@ -8,7 +8,7 @@ load_dotenv()
 class LLMClient(ABC):
 
     @abstractmethod
-    def chat(self, messages, tool_functions):
+    def chat(self, messages, tool_functions, model):
         pass
 
 class GroqClient(LLMClient):
@@ -18,9 +18,9 @@ class GroqClient(LLMClient):
             base_url="https://api.groq.com/openai/v1"
         )
 
-    def chat(self, messages, tools):
+    def chat(self, messages, tools, model):
         response = self.client.chat.completions.create(
-            model= os.getenv("GROQ_MODEL"),
+            model= model,
             messages=messages,
             tools=tools,
         )
@@ -32,9 +32,9 @@ class CerebrasClient(LLMClient):
     def __init__(self):
         self._client = OpenAI(api_key=os.getenv("CEREBRAS_API_KEY"), base_url="https://api.cerebras.ai/v1")
 
-    def chat(self, messages: list, tools: list):
+    def chat(self, messages: list, tools: list, model: str):
         response = self._client.chat.completions.create(
-            model=os.getenv("CEREBRAS_MODEL"),
+            model=model,
             messages=messages,
             tools=tools,
         )
